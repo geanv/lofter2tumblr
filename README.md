@@ -1,7 +1,7 @@
 # lofter2tumblr
 
-lofter2tumblr is a python project that helps one to migrate blog from LOFTER.com to Tumblr.com.
-[![Build Status](https://travis-ci.org/geanv/lofter2tumblr.svg?branch=master)](https://travis-ci.org/geanv/lofter2tumblr)
+lofter2tumblr is a python project that helps one to migrate blog from LOFTER.com to Tumblr.com. lofter2tumblr requires a source XML file exported from LOFTER.com, and uses open APIs to post blogs on Tumblr.
+
 
 ## Preparation
 
@@ -11,12 +11,13 @@ lofter2tumblr is a python project that helps one to migrate blog from LOFTER.com
 
 # Copyright and license
 
-Project copyright 2016 by GJ
+Project copyright 2016 by GJ.
+
 API copyright 2013 by Tumblr, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this work except in compliance with the License. You may obtain a copy of
-the License in the LICENSE file, or at:
+the License at:
 
 http://www.apache.org/licenses/LICENSE-2.0
 

@@ -27,16 +27,22 @@ def format_time(publish_time):
     return publish_time_GMT
 
 def send_post(post_item, site):
-    #posting
+    '''
+    Send post to Tumblr
+    '''
+    #post photo
     if (post_item['type'] == 'Photo'):
-        ret = client.create_photo(site, state="published", date=post_item['date'], format="html", data=post_item['data'], caption=post_item['caption'])
+        ret = client.create_photo(site, state="published",
+            date=post_item['date'], format="html", data=post_item['data'], caption=post_item['caption'])
         
         for file_name in post_item['data']:
             if os.path.isfile(file_name):
                 print " - [Removing] temp file: " + file_name
                 os.remove(file_name)
+    #post text
     if (post_item['type'] == 'Text'):
-        ret = client.create_text(site, state="published", date=post_item['date'], title=post_item['title'], body=post_item['body'], native_inline_images=True)    
+        ret = client.create_text(site, state="published",
+            date=post_item['date'], title=post_item['title'], body=post_item['body'], native_inline_images=True)    
     
     if ('id' in ret):
         print " - [Succeed] Post id: " + str(ret['id'])
@@ -45,68 +51,74 @@ def send_post(post_item, site):
         print " - [Failed] Tumblr.com response: " + str(ret['response'])
         return False
 
+def parse_post(post):
+    '''
+    Parse the XML file from LOFTER
+    '''
+    #type
+    type = post.find('type')
+    id = post.find('permalink')
+    #time
+    publish_time = post.find('publishTime')
+    GMT_time = format_time(publish_time.text)
+    
+    post_item = {
+        "type": type.text,
+        "time": publish_time.text,
+        "date": GMT_time,
+        "id": id.text,
+    }       
+    print "[" + str(count) + " Find post] type: " + post_item['type'] + ", id: " + post_item['id']
+    
+    #A photo
+    if (type.text == 'Photo'):
+        #caption
+        caption = post.find('caption')
+        post_item['caption'] = caption.text
+        #imgs
+        photo_links = post.find('photoLinks')
+        urls = json.loads(photo_links.text)
+        file_names = []
+        for url in urls:
+            if "raw" in url:
+                img = url['raw']
+            elif "orign" in url:
+                img = url['orign']
+        file_name = img[img.rfind('/') + 1: len(img)]
+        download_img(img, file_name)
+        file_names.append(file_name)            
+        post_item['data'] = file_names
+
+    elif (type.text == 'Text'):
+        #title
+        title = post.find('title')
+        post_item['title'] = title.text
+        #body
+        content = post.find('content')            
+        post_item['body'] = content.text
+        
+    else:
+        return None
+        
+    return post_item
+
 def add_post(tree, site):
+    '''
+    Parse the XML file and add posts
+    '''
     print "----------- Format post from LOFTER XML ------------"
     post_list = []
     count = 1
     for post in tree.iterfind('PostItem'):
-        #type
-        type = post.find('type')
-        id = post.find('permalink')
-        #time
-        publish_time = post.find('publishTime')
-        GMT_time = format_time(publish_time.text)
-        
-        post_item = {
-            "type": type.text,
-            "time": publish_time.text,
-            "date": GMT_time,
-            "id": id.text,
-        }
-        print "[" + str(count) + " Find post] type: " + post_item['type'] + ", id: " + post_item['id']
-        count = count + 1
-        
-        #A photo
-        if (type.text == 'Photo'):
-            #caption
-            caption = post.find('caption')
-            post_item['caption'] = caption.text
-            #imgs
-            photo_links = post.find('photoLinks')
-            urls = json.loads(photo_links.text)
-            file_names = []
-            for url in urls:
-                if "raw" in url:
-                    img = url['raw']
-                elif "orign" in url:
-                    img = url['orign']
-            file_name = img[img.rfind('/') + 1: len(img)]
-            download_img(img, file_name)
-            file_names.append(file_name)            
-            post_item['data'] = file_names
-            
-            #posting
-            #print "Posting photo: " + GMT_time
-            #ret = client.create_photo(site, state="published", date=GMT_time, format="html", data=file_names, caption=caption.text)
-            #print ret            
-            
-        if (type.text == 'Text'):
-            #title
-            title = post.find('title')
-            post_item['title'] = title.text
-            #body
-            content = post.find('content')            
-            post_item['body'] = content.text
-            
-            #posting
-            #print "Posting text: " + GMT_time
-            #ret = client.create_text(site, state="published", date=GMT_time, title=title.text, body=content.text)
-            #print ret
-            
-        post_list.append(post_item)
+        post_item = parse_post(post)
+        if not post_item:
+            print " - [Error] Unsupported type: " + post_item['type']
+        else:
+            post_list.append(post_item)
+            count = count + 1
         
     #sort by time
-    print "----------- Send post to " + site + " ------------"
+    print "----------- Send post to " + site + " -------------"
     post_list.sort(key=lambda post:post['time'])
     count = 1
     failed_post = []
@@ -130,10 +142,12 @@ def add_post(tree, site):
 def del_all_posts(site):
     print "----------- Delete all posts at " + site + " ------------"
     posts_info = client.posts(site)
+    count = 1
     while posts_info['total_posts'] > 0:
         for post in posts_info['posts']:
             ret = client.delete_post(site, post['id'])
-            print "[Deleted] " + str(ret)
+            print "[" + str(count) + " Deleted] " + str(ret)
+            count = count + 1
         posts_info = client.posts(site)
 
 def new_oauth(yaml_path):
@@ -213,7 +227,7 @@ if __name__ == '__main__':
     #file_name = 'test.xml'
     file_name = raw_input("Input the XML file exported from LOFTER: ")
     tree = ET.ElementTree(file=file_name)
-    #site_url = '2016-4-3.tumblr.com'
+    #site_url = 'geanv.tumblr.com'
     site_url = raw_input("Input site address (e.g., abc.tumblr.com): ")
     delete_all = raw_input("Delete all posts first? (\"Y\" to delete): ")
     
