@@ -13,21 +13,24 @@ To migrate the blogs from LOFTER to Tumblr, you need to prepare the following th
 
 ## Migrating to Tumblr
 
-- Backup of LOFTER XML file
+- Backup LOFTER XML file
 
 After logging into [LOFTER](http://www.lofter.com/export) with your account, go to the "export" page by clicking "更多->导入导出" on the top bar. Choose the blog that you want to export, and export the XML file by clicking "导出XML文件".
 
 - Register an OAuth key of Tumblr
 
 Go to the [register page](https://www.tumblr.com/oauth/apps), and register a new application. You will get a pair of keys such as:
->consumer_key: **********icCHd47HFuTrL5AjqB6V75XgYm1tTmItovcgCh
+
+>consumer_key: **********icCHd47HFuTrL5AjqB6V75XgYm1tTmItovcgCh\
 >consumer_secret: **********INjcFwIv1lmekj8qhbExXkHJ8A23k5X8jK3DVCl
 
 Mark them down. You will need to use them in the importer program.
 
 - Run importer
 
-Download the project and go to the folder where `importer.py` locates. Run the program named `importer.py`, or open the command window and type `python importer.py`. Make sure you have Python 2.7 runtime environment.
+Download the project and go to the folder where `importer.py` locates. Make sure you have Python 2.7 runtime environment. Run the program named `importer.py`, or open the command window and type:
+
+	python importer.py
 
 The program will ask you to type your `consumer_key` and `consumer_secret` at the first time. It will store the keys and oauth token on your home directory once the authentication is finished. If the authentication finishes correctly, you can input the name of the XML file. It's better to put the XML file is in the same folder with `importer.py`.
 
@@ -66,7 +69,6 @@ After all the setups, the importer begins to parse the XML file, download the ne
 
 If the posting operation fails after retrying 5 times, the importer will treat this post as a failed post. It will report the IDs of all failed posts in the end.
 
-----------
 # Copyright and license
 
 Project copyright 2016 by GJ.
