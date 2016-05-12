@@ -51,7 +51,7 @@ def send_post(post_item, site):
         print " - [Failed] Tumblr.com response: " + str(ret['response'])
         return False
 
-def parse_post(post):
+def parse_post(post, count):
     '''
     Parse the XML file from LOFTER
     '''
@@ -110,7 +110,7 @@ def add_post(tree, site):
     post_list = []
     count = 1
     for post in tree.iterfind('PostItem'):
-        post_item = parse_post(post)
+        post_item = parse_post(post, count)
         if not post_item:
             print " - [Error] Unsupported type: " + post_item['type']
         else:
