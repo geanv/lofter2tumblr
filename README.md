@@ -21,7 +21,8 @@ After logging into [LOFTER](http://www.lofter.com/export) with your account, go 
 
 Go to the [register page](https://www.tumblr.com/oauth/apps), and register a new application. You will get a pair of keys such as:
 
->consumer_key: **********icCHd47HFuTrL5AjqB6V75XgYm1tTmItovcgCh\
+>consumer_key: **********icCHd47HFuTrL5AjqB6V75XgYm1tTmItovcgCh
+>
 >consumer_secret: **********INjcFwIv1lmekj8qhbExXkHJ8A23k5X8jK3DVCl
 
 Mark them down. You will need to use them in the importer program.
